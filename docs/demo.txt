@@ -1,0 +1,56 @@
+vazhgun 0.1.0 · chapter2.docx · 25 paragraphs (19 Persian), 1 tables
+
+✗ V101 Persian text in a left-to-right paragraph   [¶23 · Normal]
+    typed: ⁦این بند از فایل PDF کپی شده و جهت پاراگراف آن چپ‌به‌راست است (ذخیره‌شده توسط ابزار دیگر).⁩
+    drawn: ⁦⁧این بند از فایل⁩⁦ PDF ⁩⁧کپی شده و جهت پاراگراف آن چپ‌به‌راست است (ذخیره‌شده توسط ابزار دیگر)⁩⁦.⁩⁩   (approximate; runs listed left to right)
+    why  : Word draws the paragraph's base direction from its own setting (w:bidi), not from the language. In a left-to-right paragraph punctuation and brackets at the ends of a Persian sentence jump to the wrong side and number order flips.
+    fix  : Select the paragraph and press Ctrl+Right Shift (right-to-left), or set the style to right-to-left. `--fix` adds w:bidi.
+
+✗ V104 Invisible bidi control characters (override/unbalanced)   [¶24 · Normal]
+    text : ⁦…یجه در جدول ۲-۲ بررسی شد.⟨RLE⟩⁩
+    why  : 1 embedding/override/isolate character(s) found (RL Embedding). They are typically pasted in from PDFs or web pages; overrides force the visual order and an unclosed one leaks into the following text. Word only inserts them through its «Insert Unicode control character» menu. vazhgun cannot preview this paragraph (explicit controls are outside its scope).
+    fix  : Retype the passage, or run `--fix --strip-controls` to delete them (review the result: removing an embedding changes the drawing).
+
+! V203 Sign «-» is drawn after its number   [¶7 · Normal]
+    typed: ⁦در شب‌های زمستان تا -۵ درجه‌ی سان⁩
+    drawn: ⁦⁧ درجه‌ی سان⁩⁦۵⁩⁧در شب‌های زمستان تا -⁩⁩   (approximate; runs listed left to right)
+    why  : In a right-to-left paragraph a hyphen or plus in front of a digit is a weak character that goes with the Persian text around it, so it is drawn on the right of the number: -۵ looks like ۵-.
+    fix  : Put a left-to-right mark (U+200E) before the sign, or use the real minus U+2212 with it. `--fix` inserts the mark.
+
+! V202 Inconsistent drawing of caption / chapter-style numbers (شکل ۲-۳, (۲-۴))   [¶10 · Normal]
+    typed: ⁦(۲-۴)⁩
+    drawn: ⁦⁧)⁩⁦۲-۴⁩⁧(⁩⁩   (approximate; runs listed left to right)
+    why  : 2 of these are drawn left-to-right (first number on the left) and 6 right-to-left (first number on the right) in this document, so the same kind of number appears as ۲-۳ in one place and ۳-۲ in another. This is one of the 2 drawn left-to-right.
+    fix  : Pick one convention for the whole thesis and apply it: `--fix --chains reading` (first number on the right, RLM after the separator) or `--fix --chains ltr` (first number on the left).
+
+! V202 Inconsistent drawing of caption / chapter-style numbers (شکل ۲-۳, (۲-۴))   [¶11 · Normal]
+    typed: ⁦ که در Fig. ۲-۳ آمده ⁩
+    drawn: ⁦⁧ آمده ⁩⁦Fig. ۲-۳⁩⁧ که در ⁩⁩   (approximate; runs listed left to right)
+    why  : 2 of these are drawn left-to-right (first number on the left) and 6 right-to-left (first number on the right) in this document, so the same kind of number appears as ۲-۳ in one place and ۳-۲ in another. This is one of the 2 drawn left-to-right.
+    fix  : Pick one convention for the whole thesis and apply it: `--fix --chains reading` (first number on the right, RLM after the separator) or `--fix --chains ltr` (first number on the left).
+
+! V103 Persian table laid out left-to-right   [table 1 (3×3)]
+    text : ⁦قطر (میلی‌متر)⁩
+    why  : Without the table property «right-to-left» (w:bidiVisual) the first column is drawn at the LEFT edge, so the columns of a Persian table read backwards.
+    fix  : Select the table → Table Properties → Table → Alignment, or Layout → Table Direction → Right-to-Left. `--fix` adds w:bidiVisual.
+
+· V201 Number order rests on the renderer: year ranges (۱۳۹۸-۱۳۹۹)   [¶3 · Normal]
+    typed: ⁦ه‌ی سال‌های ۱۳۹۸-۱۴۰۱ گردآو⁩
+    drawn: ⁦⁧ گردآو⁩⁦۱۴۰۱⁩⁧-⁩⁦۱۳۹۸⁩⁧ه‌ی سال‌های ⁩⁩   (approximate; runs listed left to right)
+    why  : Typed «۱۳۹۸-۱۴۰۱»; by the Unicode algorithm it is drawn right-to-left here (first number on the RIGHT, reading order). How a number with a hyphen or slash is drawn depends on what comes before it (Persian letters, Latin letters, start of the line, a bracket) and can differ between Word versions, LibreOffice, Google Docs and PDF export (a published Persian-Word note reports a slash date shown day-first in Word although the Unicode algorithm draws it left-to-right). Consistent here, but not explicit.
+    fix  : Optional: `--fix --chains ltr` (LRM around the chain: first number on the left) or `--chains reading` (RLM after each separator: first number on the right).
+
+· V201 Number order rests on the renderer: page ranges (صفحات ۱۲-۱۵)   [¶5 · Normal]
+    typed: ⁦وش در صفحات ۱۲-۱۵ پایان⁩
+    drawn: ⁦⁧ پایان⁩⁦۱۵⁩⁧-⁩⁦۱۲⁩⁧وش در صفحات ⁩⁩   (approximate; runs listed left to right)
+    why  : Typed «۱۲-۱۵»; by the Unicode algorithm it is drawn right-to-left here (first number on the RIGHT, reading order). How a number with a hyphen or slash is drawn depends on what comes before it (Persian letters, Latin letters, start of the line, a bracket) and can differ between Word versions, LibreOffice, Google Docs and PDF export (a published Persian-Word note reports a slash date shown day-first in Word although the Unicode algorithm draws it left-to-right). Consistent here, but not explicit.
+    fix  : Optional: `--fix --chains ltr` (LRM around the chain: first number on the left) or `--chains reading` (RLM after each separator: first number on the right).
+
+· V201 Number order rests on the renderer: dates (۱۴۰۳/۰۹/۰۴)   [¶8 · Normal]
+    typed: ⁦ها در تاریخ ۱۴۰۳/۰۹/۰۴ برداش⁩
+    drawn: ⁦⁧ برداش⁩⁦۱۴۰۳/۰۹/۰۴⁩⁧ها در تاریخ ⁩⁩   (approximate; runs listed left to right)
+    why  : Typed «۱۴۰۳/۰۹/۰۴»; by the Unicode algorithm it is drawn left-to-right here (first number on the LEFT). How a number with a hyphen or slash is drawn depends on what comes before it (Persian letters, Latin letters, start of the line, a bracket) and can differ between Word versions, LibreOffice, Google Docs and PDF export (a published Persian-Word note reports a slash date shown day-first in Word although the Unicode algorithm draws it left-to-right). Consistent here, but not explicit.
+    fix  : Optional: `--fix --chains ltr` (LRM around the chain: first number on the left) or `--chains reading` (RLM after each separator: first number on the right).
+
+2 error(s), 4 warning(s), 3 note(s); 9 fixable with --fix.
+The drawn lines follow the Unicode Bidirectional Algorithm; Word/LibreOffice/Google Docs can differ slightly. Open the file to confirm.
