@@ -1,0 +1,12 @@
+name: Missed case (false negative)
+description: A direction problem it does not report
+labels: [enhancement]
+body:
+  - type: textarea
+    id: case
+    attributes: {label: The case and its context (invented or public)}
+    validations: {required: true}
+  - type: textarea
+    id: why
+    attributes: {label: Why it is a problem, and how a careful reader would describe it}
+    validations: {required: true}

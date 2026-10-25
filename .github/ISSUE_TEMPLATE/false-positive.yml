@@ -1,0 +1,23 @@
+name: False positive / wrong output
+description: A finding, or a drawn view or a fix that is wrong
+labels: [false-positive]
+body:
+  - type: markdown
+    attributes:
+      value: "Please use an invented or short public sentence. Never paste a real thesis."
+  - type: input
+    id: version
+    attributes: {label: vazhgun version}
+    validations: {required: true}
+  - type: input
+    id: code
+    attributes: {label: Finding code, placeholder: "V101, V203 ..."}
+    validations: {required: true}
+  - type: textarea
+    id: text
+    attributes: {label: The text or a minimal document description (invented or public)}
+    validations: {required: true}
+  - type: textarea
+    id: expected
+    attributes: {label: What should happen instead, and why}
+    validations: {required: true}

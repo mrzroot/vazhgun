@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use vazhgun, please cite it as below."
+title: "vazhgun: an offline bidi audit for Persian and Arabic Word documents"
+type: software
+version: 0.1.0
+date-released: 2026-10-24
+license: MIT
+repository-code: "https://github.com/mrzroot/vazhgun"
+url: "https://mrzroot.github.io/vazhgun/"
+authors:
+  - family-names: Zare
+    given-names: Mohammadreza
+keywords:
+  - persian
+  - farsi
+  - arabic
+  - bidi
+  - rtl
+  - docx
+  - thesis
+abstract: "Offline, dependency-free command-line audit of a Persian/Arabic .docx for places where the order a reader sees depends on bidirectional rules or the renderer: left-to-right paragraphs and tables, number chains such as ۲-۳, signs before digits, stray direction controls. Writes an explicit fix to a copy."
