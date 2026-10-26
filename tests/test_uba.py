@@ -1,3 +1,12 @@
+"""vazhgun's Unicode Bidirectional Algorithm (UAX #9) against two independent references.
+
+* python-bidi is the oracle for the display string (bracket-free input; it differs from the standard on brackets).
+* FriBidi, via ctypes, is the oracle for embedding levels including bracket pairs; skipped if libfribidi is absent.
+
+The remaining tests pin down individual rules (W2, W4, ...) on realistic Persian strings.
+"""
+import ctypes
+import ctypes.util
 import random
 
 import pytest
@@ -6,11 +15,15 @@ from vazhgun import uba
 
 bidi = pytest.importorskip("bidi.algorithm", reason="python-bidi is the test oracle (pip install python-bidi)")
 
-BASE = list("سلامکتابمنیوهرد") + list("abcXYZ") + list("۰۱۲۳۴۵۶۷۸۹") + list("0123456789") + list("-/.:, \u200f\u200e\u200c") + ["\u064e"]
+ZWNJ = "\u200c"
+# Alphabet for random strings: Persian letters, Latin letters, both digit sets, separators, direction marks, a diacritic.
+BASE = (list("سلامکتابمنیوهرد") + list("abcXYZ") + list("۰۱۲۳۴۵۶۷۸۹") + list("0123456789")
+        + list("-/.:, \u200f\u200e\u200c") + ["\u064e"])
 BRACKETS = list("()[]")
 
 
 def ref_display(s, rtl):
+    """Reference rendering of *s* from python-bidi, in a right-to-left or left-to-right paragraph."""
     return bidi.get_display(s, base_dir="R" if rtl else "L")
 
 
@@ -23,14 +36,13 @@ def test_display_matches_python_bidi_without_brackets():
         s = "".join(rnd.choice(BASE) for _ in range(rnd.randint(1, 14)))
         for rtl in (True, False):
             mine, ref = uba.display(s, rtl), ref_display(s, rtl)
-            if mine.replace("\u200c", "") != ref.replace("\u200c", ""):
+            if mine.replace(ZWNJ, "") != ref.replace(ZWNJ, ""):
                 bad.append((s, rtl, mine, ref))
     assert not bad, bad[:3]
 
 
 def _fribidi():
-    import ctypes
-    import ctypes.util
+    """Load libfribidi, or skip the calling test when it is not installed."""
     name = ctypes.util.find_library("fribidi")
     if not name:
         pytest.skip("libfribidi not installed")
@@ -38,10 +50,10 @@ def _fribidi():
 
 
 def test_levels_match_fribidi_including_brackets():
-    import ctypes
     lib = _fribidi()
 
     def levels(s, rtl):
+        """Embedding level of every character of *s* according to FriBidi."""
         n = len(s)
         cp = (ctypes.c_uint32 * n)(*[ord(c) for c in s])
         types = (ctypes.c_uint32 * n)()
@@ -49,7 +61,7 @@ def test_levels_match_fribidi_including_brackets():
         br = (ctypes.c_uint32 * n)()
         lib.fribidi_get_bracket_types(cp, n, types, br)
         lv = (ctypes.c_int8 * n)()
-        base = ctypes.c_uint32(0x111 if rtl else 0x110)
+        base = ctypes.c_uint32(0x111 if rtl else 0x110)    # FRIBIDI_PAR_RTL / FRIBIDI_PAR_LTR
         assert lib.fribidi_get_par_embedding_levels_ex(types, br, n, ctypes.byref(base), lv) > 0
         return list(lv)
     rnd = random.Random(7)
@@ -60,7 +72,7 @@ def test_levels_match_fribidi_including_brackets():
         for rtl in (True, False):
             a, b = uba.resolve(s, rtl), levels(s, rtl)
             # BN (ZWNJ) is removed by rule X9 and gets no level of its own: compare everything else
-            if [x for x, ch in zip(a, s) if ch != "\u200c"] != [x for x, ch in zip(b, s) if ch != "\u200c"]:
+            if [x for x, ch in zip(a, s) if ch != ZWNJ] != [x for x, ch in zip(b, s) if ch != ZWNJ]:
                 bad.append((s, rtl))
     assert not bad, bad[:3]
 
