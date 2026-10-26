@@ -230,7 +230,6 @@ def analyse(doc: Document, scope: str = "all") -> List[Finding]:
         by_kind.setdefault(str(c["kind"]), []).append(c)
     for kind, items in by_kind.items():
         orders = {c["order"] for c in items}
-        marks = {c["marked"] for c in items}
         label = {"caption-number": "caption / chapter-style numbers (شکل ۲-۳, (۲-۴))", "page-range": "page ranges (صفحات ۱۲-۱۵)",
                  "year-range": "year ranges (۱۳۹۸-۱۳۹۹)", "date": "dates (۱۴۰۳/۰۹/۰۴)", "range": "numeric ranges (۱۰-۲۰)"}[kind]
         if len(orders) > 1:
