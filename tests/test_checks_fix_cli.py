@@ -1,3 +1,8 @@
+"""Chain-direction audit (V-codes), the --fix copy writer and the CLI, driven by the synthetic sample chapter.
+
+A "chain" is a run of numbers joined by - / . : such as «شکل ۲-۳» or «۱۴۰۳/۰۵/۱۲». Word draws it left-to-right or
+right-to-left depending on the characters around it, so one document can show the same pattern two ways.
+"""
 import json
 import os
 import zipfile
@@ -8,7 +13,8 @@ from vazhgun import checks, cli, fixer, sample, uba
 from vazhgun.docxbuild import Doc
 from vazhgun.docxio import load
 
-RLM, LRM = "\u200f", "\u200e"
+RLM, LRM = "\u200f", "\u200e"          # right-to-left / left-to-right marks: invisible, direction-only
+CHAIN_KINDS = ("caption-number", "page-range", "year-range", "range", "date")
 
 
 @pytest.fixture()
@@ -17,7 +23,25 @@ def flawed(tmp_path):
 
 
 def codes(path):
+    """[(code, severity)] of every finding in the .docx at *path*."""
     return [(f.code, f.severity) for f in checks.analyse(load(path))]
+
+
+def findings(path, code):
+    """The findings with the given *code* in the .docx at *path*."""
+    return [x for x in checks.analyse(load(path)) if x.code == code]
+
+
+def chain_orders(path):
+    """The set of drawing orders ('rtl'/'ltr') of all number chains inside right-to-left paragraphs."""
+    orders = set()
+    for p in load(path).paragraphs:
+        if not p.bidi:
+            continue
+        for m in checks.CHAIN_RE.finditer(p.text):
+            if checks._kind(p.text, m, p) in CHAIN_KINDS:
+                orders.add(checks.chain_order(p.text, m, True))
+    return orders
 
 
 def test_flawed_chapter_reports_each_problem(flawed):
@@ -38,13 +62,13 @@ def test_unmarked_but_consistent_chapter_gets_only_notes_and_the_inconsistency_w
 
 
 def test_inconsistency_is_found_because_context_changes_the_drawing(flawed):
-    f = [x for x in checks.analyse(load(flawed)) if x.code == "V202"]
+    f = findings(flawed, "V202")
     assert {x.extra["order"] for x in f} == {"ltr"}           # «Fig. ۲-۳» and «(۲-۴)» differ from «شکل ۲-۱»
     assert all(x.segments for x in f)
 
 
 def test_sign_after_number_finding_has_a_preview(flawed):
-    f = [x for x in checks.analyse(load(flawed)) if x.code == "V203"]
+    f = findings(flawed, "V203")
     assert len(f) == 1 and f[0].fixable and "۵" in f[0].typed
 
 
@@ -53,34 +77,20 @@ def test_fix_reading_resolves_everything_and_orders_agree(flawed, tmp_path):
     st = fixer.fix_docx(flawed, dst, chains="reading", strip_controls=True)
     assert st["bidi"] == 1 and st["table"] == 1 and st["signs"] == 1 and st["controls"] == 1 and st["chains"] >= 8
     assert codes(dst) == []
-    doc = load(dst)
-    orders = set()
-    for p in doc.paragraphs:
-        if p.bidi:
-            for m in checks.CHAIN_RE.finditer(p.text):
-                if checks._kind(p.text, m, p) in ("caption-number", "page-range", "year-range", "range", "date"):
-                    orders.add(checks.chain_order(p.text, m, True))
-    assert orders == {"rtl"}
+    assert chain_orders(dst) == {"rtl"}
 
 
 def test_fix_ltr_makes_every_chain_left_to_right(flawed, tmp_path):
     dst = str(tmp_path / "fixed.docx")
     fixer.fix_docx(flawed, dst, chains="ltr", strip_controls=True)
     assert codes(dst) == []
-    doc = load(dst)
-    orders = set()
-    for p in doc.paragraphs:
-        if p.bidi:
-            for m in checks.CHAIN_RE.finditer(p.text):
-                if checks._kind(p.text, m, p) in ("caption-number", "page-range", "year-range", "range", "date"):
-                    orders.add(checks.chain_order(p.text, m, True))
-    assert orders == {"ltr"}
+    assert chain_orders(dst) == {"ltr"}
 
 
 def test_fix_without_options_only_touches_direction_and_table_signs(flawed, tmp_path):
     dst = str(tmp_path / "fixed.docx")
     fixer.fix_docx(flawed, dst)
-    got = {(c) for c, s in codes(dst) if s == "error"}
+    got = {c for c, severity in codes(dst) if severity == "error"}
     assert got == {"V104"}                  # controls are only removed on request
 
 
@@ -94,12 +104,16 @@ def test_fix_changes_nothing_but_document_xml(flawed, tmp_path):
             assert a.read(n) == b.read(n)
 
 
+def visible(text):
+    """*text* without direction controls (embeddings, isolates, RLM/LRM): only what a reader sees."""
+    return "".join(c for c in text if c not in uba.EXPLICIT and c not in (RLM, LRM))
+
+
 def test_fix_never_changes_visible_letters(flawed, tmp_path):
     dst = str(tmp_path / "fixed.docx")
     fixer.fix_docx(flawed, dst, chains="reading", strip_controls=True)
-    strip = lambda s: "".join(c for c in s if c not in uba.EXPLICIT and c not in (RLM, LRM))
-    for p, q in zip(load(flawed).paragraphs, load(dst).paragraphs):
-        assert strip(p.text) == strip(q.text)
+    for before, after in zip(load(flawed).paragraphs, load(dst).paragraphs):
+        assert visible(before.text) == visible(after.text)
 
 
 def test_fix_survives_xml_special_characters(tmp_path):
@@ -155,7 +169,7 @@ def test_text_file_input(tmp_path, capsys):
 
 
 def test_report_makes_bidi_marks_visible(flawed):
-    f = [x for x in checks.analyse(load(flawed)) if x.code == "V104"][0]
+    f = findings(flawed, "V104")[0]
     assert "⟨RLE⟩" in f.snippet or "RLE" in f.why
 
 
