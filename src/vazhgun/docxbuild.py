@@ -5,7 +5,7 @@ No real thesis is ever used: every fixture is synthetic text written for this pr
 from __future__ import annotations
 
 import zipfile
-from typing import Iterable, List, Optional, Sequence, Tuple, Union
+from typing import List, Optional, Sequence, Tuple, Union
 from xml.sax.saxutils import escape
 
 WNS = ('xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" '

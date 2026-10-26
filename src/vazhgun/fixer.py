@@ -6,7 +6,7 @@ import zipfile
 from typing import Dict, List, Optional, Tuple
 from xml.sax.saxutils import escape, unescape
 
-from .checks import CHAIN_RE, MINUS_RE, MARK, RLM, LRM, SEP, DIGIT, _kind, is_persian_text, chain_order
+from .checks import CHAIN_RE, MINUS_RE, MARK, RLM, LRM, SEP, _kind
 from . import uba
 from .docxio import read_docx
 
@@ -171,7 +171,7 @@ def fix_docx(src: str, dst: str, chains: Optional[str] = None, strip_controls: b
 
 
 def _patch_tables(xml: str, want: set, stats: Dict[str, int]) -> str:
-    out, last, n = [], 0, 0
+    out, n = [], 0
     for m in re.finditer(r"<w:tbl>|<w:tbl\s[^>]*>", xml):
         n += 1
         if n not in want:

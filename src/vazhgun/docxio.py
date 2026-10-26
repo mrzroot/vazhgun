@@ -9,7 +9,7 @@ from __future__ import annotations
 import re
 import zipfile
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 import xml.etree.ElementTree as ET
 
 W = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
