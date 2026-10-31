@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses
 [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+Nothing user-facing yet, so no release was cut for these.
+
+- Docs: README rewritten in English and Persian (banner, contents, before/after, features, limits, roadmap); CITATION.cff, issue forms and a pull-request template.
+- Internal: unused imports and never-read variables removed; tests got named helpers and docstrings. No change in findings or output.
+
 ## [0.1.0] - 2026-10-24
 
 First release.
