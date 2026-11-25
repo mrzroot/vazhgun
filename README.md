@@ -23,6 +23,17 @@ inside brackets or after Latin letters it is drawn left to right. A thesis that 
 different orders on one page, and `-۵` can be drawn as `۵-`. Each of these is a one-line fix once you know where it is. `vazhgun` finds where, and
 shows the order explicitly instead of leaving it to the renderer.
 
+## Choose the right tool for your thesis
+
+Keep the original Word file. Use each tool for the issue it is designed to find:
+
+- [payanlint](https://github.com/mrzroot/payanlint): Detect typing and Word formatting issues; start with a report and fix safe text issues only in a copy.
+- [arjaa](https://github.com/mrzroot/arjaa): Check links from in-text mentions to captions and bibliography entries; reports only.
+- **vazhgun**: Find bidirectional display issues around numbers, punctuation, paragraphs and tables; optional fixes write a copy.
+- [neveshtar](https://github.com/mrzroot/neveshtar): Flag spoken or template-like Persian phrasing; suggested edits can be reviewed as tracked changes.
+
+One possible order: check references and text direction first, then review the writing and formatting. Review any fixed copies in Word before replacing the original.
+
 ## 📦 Install
 
 Python 3.9+, no dependencies. Tested on Linux only.

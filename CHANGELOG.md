@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+- Docs: explain which Persian Word tool to use for each type of issue and how to keep the original file intact.
+
 Nothing user-facing yet, so no release was cut for these.
 
 - Docs: README rewritten in English and Persian (banner, contents, before/after, features, limits, roadmap); CITATION.cff, issue forms and a pull-request template.
